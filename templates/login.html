@@ -1,0 +1,15 @@
+{%load static%}
+
+<link rel="stylesheet" type="text/css" href="{%static 'css/register.css' %}" />
+
+<div class="login-page">
+    <div class="form">
+      <form class="login-form" method="post">
+        {% csrf_token %}
+        <input name = "name" type="text" placeholder="username"/>
+        <input name = "passwd" type="password" placeholder="password"/>
+        <button type = "submit">login</button>
+        <p class="message">Not registered? <a href="/register">Create an account</a></p>
+      </form>
+    </div>
+  </div>
