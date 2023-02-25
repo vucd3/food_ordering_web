@@ -13,3 +13,7 @@
       </form>
     </div>
   </div>
+
+{%if status == "fail" %}
+  <script>alert("User name or password are incorrect!");</script>
+{%endif%}

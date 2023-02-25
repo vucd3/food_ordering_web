@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import *
 import ast
+import datetime
 
 isLogined = False
 data = []
@@ -13,7 +14,7 @@ def index(request):
     return render(request, 'index.html') 
 
 def main(request, user):
-    return render(request, 'main.html', {'user_name': user}) 
+    return render(request, 'home.html', {'user_name': user}) 
 
 def menu(request, user):
     if not isLogined:
@@ -29,7 +30,9 @@ def register(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         passwd = request.POST.get('passwd')
-
+        users = User.objects.filter(name=name)
+        if users.exists():
+            return render(request, 'register.html', {"data": "fail"})      
         new_user = User(name=name, passwd=passwd)
         new_user.save()
         return redirect('/login')
@@ -41,12 +44,16 @@ def login(request):
         user_name = request.POST.get('name')
         pass_wd = request.POST.get("passwd")
         users = User.objects.filter(name=user_name)
+
         if users.exists():
-            global user
-            user = user_name
-            global isLogined
-            isLogined = True
-            return redirect('/home/{}/' .format(user_name)) 
+            user_lst = list(users.values())
+            if user_lst[0]['passwd'] == pass_wd:
+                global isLogined
+                isLogined = True
+                return redirect('/home/{}/' .format(user_name)) 
+            
+        return render(request, 'login.html', {"status": "fail"})
+        
     return render(request, 'login.html')
 
 @csrf_exempt
@@ -55,7 +62,6 @@ def add_order(request):
     user = request.POST.get('user')
     name = request.POST.get('name')
     price = request.POST.get('price')
-    print(user, name, price)
 
     names = [item[0] for item in data]
     prices = [item[1] for item in data]
@@ -68,7 +74,6 @@ def add_order(request):
     qty.append("")
 
     data = list(zip(names, prices, qty, users))
-    print(data)
     return JsonResponse({"status": "add food succesfully"})
 
 
@@ -107,33 +112,58 @@ def process_order(request, item, user):
             data.remove(data[data.index(itm)])
     return render(request, "cart.html", {"data": data, "user": user})
 
+
 def order(request, user):
     if request.method == "POST":
         data = request.POST.get('data')
         data = ast.literal_eval(data)
+        time = datetime.datetime.now()
+    
+        foods = []
         for item in data:
-            food = Food(name=item[0], price=item[1], quantity=item[2], user=user)
-            food.save()
-    return redirect("/" + user+'/order_done/')
+            food = Food.objects.create(name=item[0], price=item[1], quantity=item[2], user=user)    
+            foods.append(food)          
+            food.save()  
+
+        order = Order.objects.create(time = time)
+        order.foods.set(foods)
+        order.save()
+    # Create the food instance
+    return redirect("/" + user +'/order_done/')
 
 def order_done(request, user):
     global data
-    names = [item[0] for item in data]
-    prices = [item[1] for item in data]
-    qty = [item[2] for item in data]
-    users = [item[3] for item in data]
-    for i in names:
-        if users[names.index(i)] == user: 
-            while i in names:
-                names.remove(i)
-                prices.remove(prices[users.index(user)])
-                qty.remove(qty[users.index(user)])
-                users.remove(user)  
+    names = [item[0] for item in data if item[3] != user]
+    prices = [item[1] for item in data if item[3] != user]
+    qty = [item[2] for item in data if item[3] != user]
+    users = [item[3] for item in data if item[3] != user]
             
     data = list(zip(names, prices, qty, users))
     return render(request, "cart.html", {"status": "success"})
 
 def history(request, user):
-    order_his = Food.objects.filter(user=user)
-    order_his = list(order_his.values())
-    return render(request, 'order_history.html', {"data": order_his})
+    data_lst = []
+    isAdded = False
+    orders = Order.objects.all()
+    for order in orders:
+        order_his = list(order.foods.all().values())
+        data = {}
+        data["info"] = []
+        for ord in order_his:
+            if ord['user'] == user:
+                info = []      
+                info.append(ord['name'])
+                info.append(ord['price'])
+                info.append(ord['quantity'])
+                data["info"].append(info)                   
+                isAdded = True
+        if isAdded:
+            data["time"] = order.time  
+            data_lst.append(data)
+            isAdded = False
+    return render(request, 'order_history.html', {"data": data_lst})
+
+
+
+def logout(request):
+    return render(request, 'index.html')

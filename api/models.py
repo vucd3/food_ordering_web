@@ -7,6 +7,11 @@ class Food(models.Model):
     price = models.CharField(max_length=1000)
     quantity = models.IntegerField()
 
+class Order(models.Model):
+    foods = models.ManyToManyField(Food)
+    time = models.CharField(max_length=1000)
+    
+
 class User(models.Model):
     name = models.CharField(max_length=1000)
     passwd = models.CharField(max_length=1000)

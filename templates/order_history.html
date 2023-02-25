@@ -1,3 +1,40 @@
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    th, td {
+        text-align: left;
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+    .order-time {
+        font-size: 14px;
+        font-style: italic;
+        color: #999;
+    }
+</style>
+
+<table>
 {%for order in data%}
-    {{order.name}} {{order.price}} {{order.quantity}} <br>
+    <tr>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Price</th>
+    </tr>
+    {% for item in order.info %}
+        <tr>
+            <td>{{item.0}}</td>
+            <td>{{item.1}}</td>
+            <td>{{item.2}}</td>
+        </tr>
+    {%endfor%}
+    <tr>
+        <td class="order-time" colspan="3">{{order.time}}</td>
+    </tr>
 {%endfor%}
+</table>
