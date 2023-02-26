@@ -21,10 +21,10 @@ def menu(request, user):
         return redirect('/login') 
     return render(request, 'menu.html', {'user_name': user}) 
 
-def book(request):
+def book(request, user):
     if not isLogined:
         return redirect('/login') 
-    return render(request, 'book.html') 
+    return render(request, 'book.html', {'user_name': user}) 
 
 def register(request):
     if request.method == 'POST':
