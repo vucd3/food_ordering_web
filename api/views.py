@@ -13,7 +13,9 @@ data = []
 def index(request):
     return render(request, 'index.html') 
 
-def main(request, user):
+def home(request, user):
+    if not isLogined:
+        return redirect('/login') 
     return render(request, 'home.html', {'user_name': user}) 
 
 def menu(request, user):
@@ -116,6 +118,8 @@ def process_order(request, item, user):
 def order(request, user):
     if request.method == "POST":
         data = request.POST.get('data')
+        if len(data) == 0:
+            return render(request, "cart.html")
         data = ast.literal_eval(data)
         time = datetime.datetime.now()
     
@@ -164,6 +168,7 @@ def history(request, user):
     return render(request, 'order_history.html', {"data": data_lst})
 
 
-
 def logout(request):
+    global isLogined
+    isLogined = False
     return render(request, 'index.html')

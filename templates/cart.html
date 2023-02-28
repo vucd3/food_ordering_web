@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>Cart</title>
     <meta charset="UTF-8">
     <title>Shopping Cart</title>
     <link rel="stylesheet" href="{% static 'css/cart.css' %}">
@@ -124,5 +125,8 @@
     button[type="submit"]:hover {
       background-color: #0069d9;
     }
-    
   </style>
+
+  {%if status == "success" %}
+  <script>alert("Your order has been sent!");</script>
+  {%endif%}
